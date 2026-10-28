@@ -1,0 +1,193 @@
+body {
+    font-family: Tahoma, Geneva, sans-serif;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    overflow: hidden;
+}
+
+.draggable {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    container-type: size;
+}
+
+.draggable p {
+    font-size: 15cqh;
+}
+
+#MenuWrapper {
+    position: fixed;
+    width: 33%;
+    min-width: 290px;
+    max-width: 400px;
+    height: calc(100% - 15px - 15px);
+    top: 15px;
+    overflow: visible;
+    left: 100dvw;
+    padding: 0;
+    transition: transform 1s;
+}
+
+#MenuWrapper.visible {
+    transform: translateX(calc(-100% - 15px));
+}
+
+#MenuToggle {
+    background-color: white;
+    position: absolute;
+    height: 60px;
+    width: 20px;
+    border: 1px solid #000000;
+    border-radius: 10px 0 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: calc((100% - 60px) / 2);
+    left: -21px;
+    transition: background-color 0.3s;
+}
+
+#MenuToggle:hover,
+#AddNew:hover {
+    background-color: #ececec;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#MenuToggle p {
+    transition: transform 1s;
+}
+
+#MenuToggle p.inward {
+    transform: scaleX(-1);
+    transition: transform 1s;
+}
+
+#Menu {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid black;
+    border-radius: 10px 0 0 10px;
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+}
+
+.settings {
+    position: relative;
+    margin: 5px;
+    border: 1px solid black;
+    border-radius: 5px;
+    display: flex;
+    flex-wrap: wrap;
+    grid-template: 1fr 1fr / 20% 65% 15%;
+    padding: 5px;
+    justify-content: space-between;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.settings input,
+.settings label{
+    height: 2em;
+    margin: 2px 0;
+}
+
+.settings label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.close {
+    position: absolute;
+    border: 1px solid black;
+    top: 7px;
+    right: 5px;
+    width: 1rem;
+    height: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    background-color: #f15252;
+    color: white;
+    font-size: 0.6em;
+    font-weight: 900;
+    line-height: 1;
+    margin: 0;
+}
+
+.close:hover {
+    background-color: #ea2828;
+}
+
+.close:active {
+    background-color: #d50d0d;
+}
+
+.rangeValue {
+    font-size: 0.9em;
+}
+
+#AddNew {
+    margin: 5px;
+    border: 1px solid #cacaca;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 8em;
+    color: #0088d3;
+    font-weight: bold;
+    transition: 0.3s;
+    order: 1;
+}
+
+#AddNew span {
+    font-size: 2em;
+    display: flex;
+    align-items: center;
+}
+
+.divValue {
+    width: calc(100% - 10px - 1rem - 5px);
+}
+
+.settings .color {
+    width: 50%;
+}
+
+.settings .color input {
+    min-width: 25%;
+    max-width: 50%;
+    flex-grow: 1;
+    margin: 0 auto;
+}
+
+.settings .slider {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+input[type="range"] {
+    flex-grow: 0.8;
+}
+
+abbr {
+    text-decoration: none;
+}
+
+.settings .check {
+    width: 50%
+}
+
+.settings .check input {
+    margin: auto;
+}
