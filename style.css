@@ -4,6 +4,9 @@ body {
     -ms-user-select: none;
     user-select: none;
     overflow: hidden;
+    width: 100%;
+    height: 100%;
+    margin: 0;
 }
 
 .draggable {
@@ -12,12 +15,14 @@ body {
     align-items: center;
     justify-content: center;
     container-type: size;
+    left: 0;
+    top: 0;
+    transition: box-shadow 0.3s;
 }
 
 .draggable p {
     font-size: 15cqh;
 }
-
 #MenuWrapper {
     position: fixed;
     width: 33%;
@@ -28,11 +33,12 @@ body {
     overflow: visible;
     left: 100dvw;
     padding: 0;
-    transition: transform 1s;
+    transition: transform 1s cubic-bezier(0,-1,1,-1);
 }
 
 #MenuWrapper.visible {
     transform: translateX(calc(-100% - 15px));
+    transition: transform 1s cubic-bezier(0.25, 0.05, 0.5, 1.4);
 }
 
 #MenuToggle {
@@ -89,6 +95,7 @@ body {
     padding: 5px;
     justify-content: space-between;
     background-color: rgba(255, 255, 255, 0.8);
+    transition: background-color 0.3s;
 }
 
 .settings input,
@@ -190,4 +197,9 @@ abbr {
 
 .settings .check input {
     margin: auto;
+}
+
+#Playground {
+    width: 100vw;
+    height: 100vh;
 }
