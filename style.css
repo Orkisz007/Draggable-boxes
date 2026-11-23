@@ -33,12 +33,12 @@ body {
     overflow: visible;
     left: 100dvw;
     padding: 0;
-    transition: transform 1s cubic-bezier(0,-1,1,-1);
+    transition: transform 1s cubic-bezier(.5, -.4, .75, .95);
 }
 
 #MenuWrapper.visible {
     transform: translateX(calc(-100% - 15px));
-    transition: transform 1s cubic-bezier(0.25, 0.05, 0.5, 1.4);
+    transition: transform 1s cubic-bezier(.25, .05, .5, 1.4);
 }
 
 #MenuToggle {
@@ -64,12 +64,12 @@ body {
 }
 
 #MenuToggle p {
-    transition: transform 1s;
+    transition: transform 0.2s 0.8s;
 }
 
 #MenuToggle p.inward {
     transform: scaleX(-1);
-    transition: transform 1s;
+    transition: transform 0.2s 0.8s;
 }
 
 #Menu {
@@ -191,11 +191,11 @@ abbr {
     text-decoration: none;
 }
 
-.settings .check {
+.settings .checkbox {
     width: 50%
 }
 
-.settings .check input {
+.settings .checkbox input {
     margin: auto;
 }
 

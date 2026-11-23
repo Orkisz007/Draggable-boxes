@@ -1,194 +1,211 @@
-let draggable = document.getElementsByClassName('draggable');
-let settings = document.getElementsByClassName('settings');
-let body = document.getElementsByTagName('body').item(0);
+let boxes = {
+    box:            document.getElementsByClassName('draggable'),
+    settings:       document.getElementsByClassName('settings'),
+    currId:         -1,
+    cursorPos:      {x: 0, y: 0}
+};
 
-let divValues = document.getElementsByName('divValue');
-let backColors = document.getElementsByName('backColor');
-let fontColors = document.getElementsByName('fontColor');
-let divSizes = document.getElementsByName('divSize');
-let outlineWidths = document.getElementsByName('outlineWidth');
-let divSizeIndicator = document.getElementsByClassName('divSize');
-let outlineWidthIndicator = document.getElementsByClassName('outlineWidth');
-let outlineColor = document.getElementsByName("outlineColor");
-let outline = document.getElementsByName("outline");
-let isDraggable = document.getElementsByName("draggable");
+let settings = {
+    text:           document.getElementsByName('text'),
+    background:     document.getElementsByName('backgroundColor'),
+    color:          document.getElementsByName('fontColor'),
+    size:           document.getElementsByName('size'),
+    outlineWidth:   document.getElementsByName('outlineWidth'),
+    outlineColor:   document.getElementsByName("outlineColor"),
+    outlineEnabled: document.getElementsByName("outlineEnabled"),
+    isDraggable:    document.getElementsByName("isDraggable")
+};
+
+let indicators = {
+    size:           document.getElementsByClassName('sizeIndicator'),
+    outlineWidth:   document.getElementsByClassName('outlineWidthIndicator'),
+};
+
+let menuElements = {
+    menu:           document.getElementById('Menu'),
+    toggle:         document.getElementById('MenuToggle'),
+    add:            document.getElementById('AddNew')
+}
 
 let playground = document.getElementById('Playground');
-let menu = document.getElementById('Menu');
-let menuToggle = document.getElementById('MenuToggle');
-let addNew = document.getElementById('AddNew');
+
+let style;
 
 let newBlockTemplate = document.createElement('div');
 newBlockTemplate.className = 'draggable';
 newBlockTemplate.innerHTML = '<p></p>';
 
-let style;
-let innerX = 0;
-let innerY = 0
-let draggedIndex = -1;
-
 let newSettingsTemplate = document.createElement('section');
 newSettingsTemplate.className = 'settings';
-newSettingsTemplate.innerHTML =
-    `<input type="text" name="divValue" aria-label="Text inside a block" placeholder="Text inside a block">
+newSettingsTemplate.innerHTML = `
+    <input type="text" name="text" aria-label="Text inside a block" placeholder="Text inside a block">
     <label class="slider">
         Box Size:
-        <input type="range" name="divSize" min="100" max="300" value="150">
-        <span class="divSize"></span>
+        <input type="range" name="size" min="100" max="300" value="150">
+        <span class="sizeIndicator"></span>
     </label>
     <label class="color">
         <abbr title="Background color">BG Col:</abbr>
-        <input type="color" name="backColor">
+        <input type="color" name="backgroundColor">
     </label>
     <label class="color">
         <abbr title="Font color">Font Col:</abbr>
         <input type="color" name="fontColor">
     </label>
-    <label class="check">
+    <label class="checkbox">
         Outline:
-        <input type="checkbox" name="outline" checked>
+        <input type="checkbox" name="outlineEnabled" checked>
     </label>
     <label class="color">
-        <abbr title="Border color">Outline Col:</abbr>
+        <abbr title="Outline color">Outline Col:</abbr>
         <input type="color" name="outlineColor">
     </label>
     <label class="slider">
-        <abbr title="Border width">Outline Width:</abbr>
+        <abbr title="Outline width">Outline Width:</abbr>
         <input type="range" name="outlineWidth" min="0" max="5" value="3">
-        <span class="outlineWidth"></span>
+        <span class="outlineWidthIndicator"></span>
     </label>
-    <label class="check">
+    <label class="checkbox">
         Draggable:
-        <input type="checkbox" name="draggable" checked>
+        <input type="checkbox" name="isDraggable" checked>
     </label>
-    <label class="check">
+    <label class="checkbox">
         Collisions:
-        <input type="checkbox" name="collision">
+        <input type="checkbox" name="doCollision">
     </label>
-    <p class="close">&#10005;</p>`;
+    <p class="close">&#10005;</p>
+`;
 
-menuToggle.addEventListener('click', () => {
-    menuToggle.parentElement.classList.toggle('visible');
-    menuToggle.children[0].classList.toggle('inward');
+menuElements.toggle.addEventListener('click', () => {
+    menuElements.toggle.parentElement.classList.toggle('visible');
+    menuElements.toggle.children[0].classList.toggle('inward');
 })
 
-addNew.addEventListener('click', () => {
+menuElements.add.addEventListener('click', () => {
     createNewBlock("");
 })
 
 let mouseHandler = (event) => {moveBox(event)};
 playground.addEventListener('mousedown', (e) => {
-    const el = e.target.closest('.draggable');
-    draggedIndex = Array.prototype.indexOf.call(draggable, el)
-    if (draggedIndex >= 0) {
-        if (isDraggable.item(draggedIndex).checked) {
+    boxes.currId = getIndex(e, '.draggable', boxes.box);
+    if (boxes.currId >= 0) {
+        if (settings.isDraggable.item(boxes.currId).checked) {
             locateCursor(e);
-            body.addEventListener('mousemove', mouseHandler);
+            addEventListener('mousemove', mouseHandler);
+            addEventListener('mouseup',
+                () => {removeEventListener('mousemove', mouseHandler);},
+                {once: true}
+            );
         }
     }
 })
 
 playground.addEventListener('dblclick', (e) => {
-    const el = e.target.closest('.draggable');
-    const index = Array.prototype.indexOf.call(draggable, el);
+    const index = getIndex(e, '.draggable', boxes.box);
     if (index >= 0) {
-        draggable.item(index).style.boxShadow = `
-            0 0 10px ${parseInt(outlineWidths.item(index).value) +3}px ${fontColors.item(index).value}`;
-        settings.item(index).style.backgroundColor = '#dfdfdf';
-        menuToggle.parentElement.classList.toggle('visible', true);
-        settings.item(index).scrollIntoView();
+        boxes.box.item(index).style.boxShadow = `
+        0 0 10px ${parseInt(settings.outlineWidth.item(index).value) + 3}px ${settings.color.item(index).value}
+    `;
+        boxes.settings.item(index).style.backgroundColor = '#dfdfdf';
+        menuElements.toggle.parentElement.classList.toggle('visible', true);
+        boxes.settings.item(index).scrollIntoView();
         setTimeout(function () {
-            draggable.item(index).style.boxShadow = 'none';
-            settings.item(index).style.backgroundColor = '#fff';
+            boxes.box.item(index).style.boxShadow = 'none';
+            boxes.settings.item(index).style.backgroundColor = '#fff';
         }, 1500);
     }
+
 })
 
-body.addEventListener('mouseup', () => {
-    body.removeEventListener('mousemove', mouseHandler);
-})
-
-menu.addEventListener('input', (e) => {
-    const el = e.target.closest('.settings');
-    const index = Array.prototype.indexOf.call(settings, el)
+menuElements.menu.addEventListener('input', (e) => {
+    const index = getIndex(e, '.settings', boxes.settings);
     if (index > -1) {
         changeSettings(index);
     }
 })
 
-menu.addEventListener('click', (e) => {
-    const el = e.target.closest('.settings');
-    const index = Array.prototype.indexOf.call(settings, el);
+menuElements.menu.addEventListener('click', (e) => {
+    const index = getIndex(e, '.settings', boxes.settings);
     if (e.target.classList.contains('close') && index >= 0) {
         removeElement(index);
     }
 })
 
-menu.addEventListener('mouseover', (e) => {
-    const el = e.target.closest('.settings');
-    const index = Array.prototype.indexOf.call(settings, el);
+menuElements.menu.addEventListener('mouseover', (e) => {
+    const index = getIndex(e, '.settings', boxes.settings);
     if (index >= 0) {
-        draggable.item(index).style.boxShadow = `
-            0 0 10px ${parseInt(outlineWidths.item(index).value) +3}px ${fontColors.item(index).value}`;
-        settings.item(index).style.backgroundColor = '#dfdfdf';
+        boxes.box.item(index).style.boxShadow = `
+            0 0 10px ${parseInt(settings.outlineWidth.item(index).value) +3}px ${settings.color.item(index).value}
+        `;
+        boxes.settings.item(index).style.backgroundColor = '#dfdfdf';
     }
 })
 
-menu.addEventListener('mouseout', (e) => {
-    const el = e.target.closest('.settings');
-    const index = Array.prototype.indexOf.call(settings, el);
+menuElements.menu.addEventListener('mouseout', (e) => {
+    const index = getIndex(e, '.settings', boxes.settings);
     if (index >= 0) {
-        draggable.item(index).style.boxShadow = 'none';
-        settings.item(index).style.backgroundColor = '#fff';
+        boxes.box.item(index).style.boxShadow = 'none';
+        boxes.settings.item(index).style.backgroundColor = '#fff';
     }
 })
+
+function getIndex(e, className, prop) {
+    const el = e.target.closest(className);
+    if (!el)
+        return -1;
+    return Array.prototype.indexOf.call(prop, el)
+}
 
 function createNewBlock(value) {
-    let i = draggable.length;
+    let i = boxes.box.length;
 
     playground.append(newBlockTemplate.cloneNode(true));
-    menu.append(newSettingsTemplate.cloneNode(true));
+    menuElements.menu.append(newSettingsTemplate.cloneNode(true));
 
-    backColors.item(i).value = `#${Math.floor(Math.random() * 16777216).toString(16).padStart(6, "0")}`;
-    fontColors.item(i).value = `#${Math.floor(Math.random() * 16777216).toString(16).padStart(6, "0")}`;
+    settings.background.item(i).value = `
+        #${Math.floor(Math.random() * 16777216).toString(16).padStart(6, "0")}
+    `;
+    settings.color.item(i).value = `#${Math.floor(Math.random() * 16777216).toString(16).padStart(6, "0")}`;
 
-    draggable.item(i).style.transform =
+    boxes.box.item(i).style.transform =
         `translate(
-            ${Math.random() * (innerWidth - divSizes.item(i).value)}px,
-            ${Math.random() * (innerHeight - divSizes.item(i).value)}px
+            ${Math.random() * (innerWidth - settings.size.item(i).value)}px,
+            ${Math.random() * (innerHeight - settings.size.item(i).value)}px
         )`;
-    draggable.item(i).style.left = ``;
+    boxes.box.item(i).style.left = ``;
 
-    divValues.item(i).value = value;
+    settings.text.item(i).value = value;
 
     changeSettings(i);
 }
 
 function changeSettings(i) {
-    draggable.item(i).style.backgroundColor = backColors.item(i).value;
-    draggable.item(i).style.color = fontColors.item(i).value;
-    draggable.item(i).style.width = `${divSizes.item(i).value}px`;
-    draggable.item(i).style.height = `${divSizes.item(i).value}px`;
-    draggable.item(i).children.item(0).textContent = divValues.item(i).value;
+    boxes.box.item(i).style.backgroundColor = settings.background.item(i).value;
+    boxes.box.item(i).style.color = settings.color.item(i).value;
+    boxes.box.item(i).style.width = `${settings.size.item(i).value}px`;
+    boxes.box.item(i).style.height = `${settings.size.item(i).value}px`;
+    boxes.box.item(i).children.item(0).textContent = settings.text.item(i).value;
     
-    divSizeIndicator.item(i).textContent = `${divSizes.item(i).value}px`;
+    indicators.size.item(i).textContent = `${settings.size.item(i).value}px`;
 
-    outlineWidthIndicator.item(i).textContent = `${outlineWidths.item(i).value}px`;
-    if (outline.item(i).checked) {
-        outlineColor.item(i).disabled = false;
-        outlineWidths.item(i).disabled = false;
-        draggable.item(i).style.outline = `${outlineWidths.item(i).value}px solid ${outlineColor.item(i).value}`;
+    indicators.outlineWidth.item(i).textContent = `${settings.outlineWidth.item(i).value}px`;
+    if (settings.outlineEnabled.item(i).checked) {
+        settings.outlineColor.item(i).disabled = false;
+        settings.outlineWidth.item(i).disabled = false;
+        boxes.box.item(i).style.outline = `
+            ${settings.outlineWidth.item(i).value}px solid ${settings.outlineColor.item(i).value}
+        `;
     }
     else {
-        outlineColor.item(i).disabled = true;
-        outlineWidths.item(i).disabled = true;
-        draggable.item(i).style.outline = 'none';
+        settings.outlineColor.item(i).disabled = true;
+        settings.outlineWidth.item(i).disabled = true;
+        boxes.box.item(i).style.outline = 'none';
     }
 }
 
 function removeElement(i) {
-    draggable.item(i).remove();
-    settings.item(i).remove();
+    boxes.box.item(i).remove();
+    boxes.settings.item(i).remove();
 }
 
 createNewBlock("Drag me!");
@@ -199,11 +216,10 @@ function locateCursor(
      */
     e
 ) {
-    style = getComputedStyle(draggable.item(draggedIndex));
+    style = getComputedStyle(boxes.box.item(boxes.currId));
     let transform = style.getPropertyValue('transform').slice(7, -1).split(', ');
-    console.log(transform.at(4) + " x " + transform.at(5));
-    innerX = Math.round(e.x - parseFloat(transform.at(4)));
-    innerY = Math.round(e.y - parseFloat(transform.at(5)));
+    boxes.cursorPos.x = Math.round(e.x - parseFloat(transform.at(4)));
+    boxes.cursorPos.y = Math.round(e.y - parseFloat(transform.at(5)));
 }
 
 function moveBox(
@@ -212,24 +228,60 @@ function moveBox(
       */
     e
 ) {
-    let x = e.x - innerX;
-    let y = e.y - innerY;
-    let style = getComputedStyle(draggable.item(draggedIndex));
+    let x = e.x - boxes.cursorPos.x;
+    let y = e.y - boxes.cursorPos.y;
     let outlineWidth = 0;
-    if (outline.item(draggedIndex).checked)
-         outlineWidth = parseInt(style.outlineWidth.slice(0, -2));
-    let size = parseInt(style.width.slice(0, -2)) + outlineWidth;
+    if (settings.outlineEnabled.item(boxes.currId).checked)
+         outlineWidth = parseInt(settings.outlineWidth.item(boxes.currId).value);
+    let size = parseInt(settings.size.item(boxes.currId).value) + outlineWidth;
     if (x < 0)
-        x = outlineWidth;
-    else if (x + parseInt(style.width.slice(0, -2)) + outlineWidth > innerWidth)
+        x = settings.outlineWidth.item(boxes.currId).value;
+    else if (x + size > innerWidth)
         x = innerWidth - size;
     if (y < 0)
-        y = outlineWidth;
-    else if (y + parseInt(style.height.slice(0, -2)) + outlineWidth > innerHeight)
+        y = settings.outlineWidth.item(boxes.currId).value;
+    else if (y + size > innerHeight)
         y = innerHeight - size;
-    draggable.item(draggedIndex).style.transform =
-        `translate(
-            ${x}px,
-            ${y}px
-        )`;
+    boxes.box.item(boxes.currId).style.transform =
+        `translate(${x}px, ${y}px)`;
+}
+
+function checkCollision() {
+    if (boxes.box.length < 2)
+        return;
+    let styleI;
+    let styleJ;
+    let transformI;
+    let transformJ;
+    let outlineWidthI;
+    let outlineWidthJ;
+    let sizeI;
+    let sizeJ;
+    for (let i = 0; i < boxes.box.length; i++) {
+        if (settings.outlineEnabled.item(i).checked)
+            outlineWidthI = parseInt(settings.outlineWidth.item(i).value);
+        sizeI = parseInt(settings.size.item(i).value) + outlineWidthI;
+        styleI = getComputedStyle(boxes.box.item(i));
+        transformI = styleI.getPropertyValue('transform').slice(7, -1).split(', ');
+        for (let j = 0; j < boxes.box.length; j++) {
+            if (settings.outlineEnabled.item(j).checked)
+                outlineWidthJ = parseInt(settings.outlineWidth.item(j).value);
+            sizeJ = parseInt(settings.size.item(j).value) + outlineWidthJ;
+            styleJ = getComputedStyle(boxes.box.item(j));
+            transformJ = styleJ.getPropertyValue('transform').slice(7, -1).split(', ')
+            if (true/*To figure out*/) {
+                console.log('collision');
+            }
+        }
+    }
+}
+
+function boxMovesBox() {
+
+}
+
+setInterval(gameLoop, 10);
+
+function gameLoop() {
+    checkCollision();
 }
